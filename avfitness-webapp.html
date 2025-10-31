@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV Fitness - Control de Asistencia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ffc5d5 0%, #ffebf0 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 10px 40px rgba(197, 63, 102, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #c53f66;
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        h2 {
+            color: #666;
+            font-size: 1.2em;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #999;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            color: white;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #c53f66 0%, #a5314f 100%);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .btn-back {
+            background: #e5e7eb;
+            color: #c53f66;
+            padding: 12px;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #c53f66;
+        }
+        
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+        
+        .day {
+            aspect-ratio: 1;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px;
+        }
+        
+        .day:active {
+            transform: scale(0.95);
+        }
+        
+        .day.checked {
+            background: #c53f66;
+            border-color: #c53f66;
+            color: white;
+        }
+        
+        .day-label {
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        
+        .day-number {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .stats {
+            background: #ffc5d5;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #c53f66;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .alert {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        
+        .student-list {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .student-card {
+            padding: 18px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .student-card:active {
+            transform: scale(0.98);
+        }
+        
+        .student-card.active {
+            border-color: #c53f66;
+            background: #fff5f7;
+        }
+        
+        .student-card.submitted {
+            background: #d1fae5;
+            border-color: #10b981;
+            opacity: 0.7;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .success-check {
+            font-size: 4em;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        @media (min-width: 500px) {
+            .calendar {
+                grid-template-columns: repeat(7, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Pantalla Principal -->
+        <div id="homeScreen" class="card">
+            <h1>AV FITNESS</h1>
+            <h2>Boutique Training Club</h2>
+            <p class="subtitle">Control de Asistencia</p>
+            
+            <button class="btn btn-secondary" onclick="showRegister()">
+                ➕ Registrarme
+            </button>
+            <button class="btn btn-primary" onclick="showStudentSelect()">
+                ✓ Marcar Asistencia
+            </button>
+            
+            <p style="text-align: center; margin-top: 20px; color: #999;" id="currentMonth"></p>
+        </div>
+        
+        <!-- Registro -->
+        <div id="registerScreen" class="card hidden">
+            <button class="btn btn-back" onclick="showHome()">← Volver</button>
+            
+            <h1 style="font-size: 2em;">Registro</h1>
+            <p class="subtitle">Completa tus datos</p>
+            
+            <div class="form-group">
+                <label>Tu nombre completo</label>
+                <input type="text" id="registerName" placeholder="Ej: María García">
+            </div>
+            
+            <div class="form-group">
+                <label>Tu plan</label>
+                <select id="registerPlan">
+                    <option value="3">Plan Básico - 3 días/semana</option>
+                    <option value="6">Plan Premium - 6 días/semana</option>
+                </select>
+            </div>
+            
+            <div class="alert">
+                <strong>📋 Importante:</strong> Podrás marcar tu asistencia cada mes y competir por el premio.
+            </div>
+            
+            <button class="btn btn-secondary" onclick="registerStudent()">
+                Completar Registro ✓
+            </button>
+        </div>
+        
+        <!-- Selección de Alumna -->
+        <div id="selectScreen" class="card hidden">
+            <button class="btn btn-back" onclick="showHome()">← Volver</button>
+            
+            <h1 style="font-size: 2em;">Tu nombre</h1>
+            <p class="subtitle" id="monthDisplay"></p>
+            
+            <div id="studentList" class="student-list"></div>
+        </div>
+        
+        <!-- Marcar Asistencia -->
+        <div id="attendanceScreen" class="card hidden">
+            <button class="btn btn-back" onclick="backToSelect()">← Volver</button>
+            
+            <h1 style="font-size: 1.8em;" id="studentName"></h1>
+            <p class="subtitle" id="planInfo"></p>
+            
+            <div class="alert">
+                <strong>📋</strong> Toca los días que asististe
+            </div>
+            
+            <div id="calendar" class="calendar"></div>
+            
+            <div class="stats">
+                <div class="stats-grid">
+                    <div>
+                        <div class="stat-value" id="attended">0</div>
+                        <div class="stat-label">Días marcados</div>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="expected">0</div>
+                        <div class="stat-label">Esperados</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="submitAttendance()">
+                Enviar Asistencia 📤
+            </button>
+        </div>
+        
+        <!-- Confirmación -->
+        <div id="successScreen" class="card hidden">
+            <div class="success-check">✓</div>
+            <h1 style="font-size: 2em;">¡Enviado!</h1>
+            <p class="subtitle">Tu asistencia ha sido registrada correctamente</p>
+            
+            <div class="stats">
+                <div class="stats-grid">
+                    <div>
+                        <div class="stat-value" id="finalAttended">0</div>
+                        <div class="stat-label">Días asistidos</div>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="finalPercentage">0%</div>
+                        <div class="stat-label">Cumplimiento</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="showHome()">
+                Finalizar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        
+        let students = JSON.parse(localStorage.getItem('students') || '[]');
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedStudent = null;
+        let attendance = [];
+        
+        function getDaysInMonth() {
+            return new Date(currentYear, currentMonth + 1, 0).getDate();
+        }
+        
+        function hideAll() {
+            document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
+        }
+        
+        function showHome() {
+            hideAll();
+            document.getElementById('homeScreen').classList.remove('hidden');
+            document.getElementById('currentMonth').textContent = 
+                `${MONTHS[currentMonth]} ${currentYear}`;
+        }
+        
+        function showRegister() {
+            hideAll();
+            document.getElementById('registerScreen').classList.remove('hidden');
+        }
+        
+        function showStudentSelect() {
+            hideAll();
+            document.getElementById('selectScreen').classList.remove('hidden');
+            document.getElementById('monthDisplay').textContent = 
+                `${MONTHS[currentMonth]} ${currentYear}`;
+            loadStudentList();
+        }
+        
+        function registerStudent() {
+            const name = document.getElementById('registerName').value.trim();
+            const plan = parseInt(document.getElementById('registerPlan').value);
+            
+            if (!name) {
+                alert('Por favor ingresa tu nombre');
+                return;
+            }
+            
+            if (students.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+                alert('Este nombre ya está registrado');
+                return;
+            }
+            
+            students.push({ id: Date.now(), name, plan });
+            localStorage.setItem('students', JSON.stringify(students));
+            
+            alert('¡Registro exitoso!');
+            document.getElementById('registerName').value = '';
+            showStudentSelect();
+        }
+        
+        function loadStudentList() {
+            const container = document.getElementById('studentList');
+            const submissions = getSubmissions();
+            
+            if (students.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#999;">No hay alumnas. ¡Regístrate!</p>';
+                return;
+            }
+            
+            container.innerHTML = students.map(student => {
+                const submitted = submissions.some(s => s.studentId === student.id);
+                return `
+                    <div class="student-card ${submitted ? 'submitted' : ''}" 
+                         onclick="${submitted ? '' : `selectStudent(${student.id})`}">
+                        <div style="font-size:1.2em;font-weight:bold;margin-bottom:5px;">
+                            ${student.name}
+                        </div>
+                        <div style="color:#666;">Plan: ${student.plan} días/semana</div>
+                        ${submitted ? '<div style="color:#10b981;font-weight:bold;margin-top:8px;">✓ Ya enviado</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function selectStudent(id) {
+            selectedStudent = students.find(s => s.id === id);
+            const days = getDaysInMonth();
+            attendance = Array(days).fill(false);
+            showAttendance();
+        }
+        
+        function showAttendance() {
+            hideAll();
+            document.getElementById('attendanceScreen').classList.remove('hidden');
+            document.getElementById('studentName').textContent = selectedStudent.name;
+            document.getElementById('planInfo').textContent = 
+                `Plan: ${selectedStudent.plan} días/semana | ${MONTHS[currentMonth]} ${currentYear}`;
+            
+            const calendar = document.getElementById('calendar');
+            const days = getDaysInMonth();
+            calendar.innerHTML = '';
+            
+            for (let i = 0; i < days; i++) {
+                const day = document.createElement('div');
+                day.className = 'day';
+                day.innerHTML = `
+                    <div class="day-label">Día</div>
+                    <div class="day-number">${i + 1}</div>
+                `;
+                day.onclick = () => toggleDay(i);
+                calendar.appendChild(day);
+            }
+            
+            updateStats();
+        }
+        
+        function toggleDay(index) {
+            attendance[index] = !attendance[index];
+            const days = document.querySelectorAll('.day');
+            days[index].classList.toggle('checked');
+            updateStats();
+        }
+        
+        function updateStats() {
+            const attended = attendance.filter(a => a).length;
+            const weeks = Math.ceil(getDaysInMonth() / 7);
+            const expected = selectedStudent.plan * weeks;
+            
+            document.getElementById('attended').textContent = attended;
+            document.getElementById('expected').textContent = expected;
+        }
+        
+        function submitAttendance() {
+            const attended = attendance.filter(a => a).length;
+            const weeks = Math.ceil(getDaysInMonth() / 7);
+            const expected = selectedStudent.plan * weeks;
+            const percentage = expected > 0 ? (attended / expected) * 100 : 0;
+            
+            const submission = {
+                id: Date.now(),
+                studentId: selectedStudent.id,
+                studentName: selectedStudent.name,
+                plan: selectedStudent.plan,
+                attended,
+                expected,
+                percentage,
+                date: new Date().toISOString()
+            };
+            
+            let submissions = getSubmissions();
+            submissions = submissions.filter(s => s.studentId !== selectedStudent.id);
+            submissions.push(submission);
+            
+            const key = `submissions_${currentYear}_${currentMonth}`;
+            localStorage.setItem(key, JSON.stringify(submissions));
+            
+            showSuccess(attended, percentage);
+        }
+        
+        function showSuccess(attended, percentage) {
+            hideAll();
+            document.getElementById('successScreen').classList.remove('hidden');
+            document.getElementById('finalAttended').textContent = attended;
+            document.getElementById('finalPercentage').textContent = 
+                Math.round(percentage) + '%';
+        }
+        
+        function backToSelect() {
+            showStudentSelect();
+        }
+        
+        function getSubmissions() {
+            const key = `submissions_${currentYear}_${currentMonth}`;
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        }
+        
+        showHome();
+    </script>
+</body>
+</html>
